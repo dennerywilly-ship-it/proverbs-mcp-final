@@ -1,0 +1,10 @@
+{
+  "name": "proverbs-of-the-world-mcp",
+  "version": "1.0.0",
+  "description": "Serveur MCP pour les proverbes du monde",
+  "main": "dist/index.js",
+  "cli": {
+    "executable": "node",
+    "args": ["dist/index.js"]
+  }
+}
