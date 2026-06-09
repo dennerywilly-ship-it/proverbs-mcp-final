@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Proverbs of the World — MCP Server
-// Recherche hybride (Lexicale + Sémantique) de proverbes authentiques enrichis par Groq.
+// Recherche hybride (Lexicale + Sémantique) avec isolation sémantique native et respect des données Wikiquote.
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -18,7 +18,7 @@ const DATA_PATH = path.resolve(__dirname, "..", "data", "proverbs.json");
 interface Proverb {
   text_original: string;
   text_fr?: string;
-  context_fr?: string; // ✨ Support du contexte philosophique en français
+  context_fr?: string;
   origin: string;
   embedding?: number[];
 }
@@ -34,21 +34,19 @@ let isModelReady = false;
 
 async function initSemanticEngine(proverbs: Proverb[]): Promise<void> {
   try {
-    // Chargement asynchrone du modèle léger (~22 Mo)
     hfPipeline = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
     
-    console.log("🧠 Indexation vectorielle en tâche de fond basée sur les données Groq...");
+    console.log("🧠 Indexation vectorielle en tâche de fond...");
     
     for (const p of proverbs) {
-      // ✨ Injection du contexte : On combine la traduction ET le sens caché pour le moteur de vecteurs !
       const textToEmbed = p.text_fr 
-        ? `${p.text_fr}. Sens : ${p.context_fr || ''} (${p.text_original})` 
+        ? `${p.text_fr}.${p.context_fr ? ` Sens : ${p.context_fr}` : ''} (${p.text_original})` 
         : p.text_original;
 
       p.embedding = await getEmbedding(textToEmbed);
     }
     isModelReady = true;
-    console.log("✨ Moteur sémantique entièrement indexé et prêt !");
+    console.log("✨ Moteur sémantique prêt !");
   } catch (err) {
     console.error("⚠️ Impossible d'initialiser le moteur sémantique. Mode lexical seul.", err);
   }
@@ -90,12 +88,12 @@ function loadDB(): ProverbsDB {
 
   const mappedProverbs: Proverb[] = rawProverbsArray.map((p: any) => {
     return {
-      text_original: p.text_original || "",
-      text_fr: p.text || p.text_fr || undefined, // Mappe le champ "text" mis à jour par Groq
-      context_fr: p.context_fr || undefined,     // ✨ Charge le contexte philosophique de Groq
-      origin: p.origin || "Unknown"
+      text_original: p.text_original?.trim() || "",
+      text_fr: (p.text || p.text_fr)?.trim() || undefined,
+      context_fr: p.context_fr?.trim() || undefined,
+      origin: p.origin?.trim() || "Unknown"
     };
-  }).filter(p => p.text_original.length > 0);
+  }).filter((p) => p.text_original.length > 0);
 
   metadata.total = mappedProverbs.length;
   return { meta: metadata, proverbs: mappedProverbs };
@@ -120,50 +118,29 @@ function scoreLexical(proverb: Proverb, keywords: string[]): number {
   let score = 0;
   for (const kw of keywords) {
     if (haystack.includes(kw)) score += 2;
-    for (const word of haystack.split(/\s+/)) {
-      if (word.startsWith(kw) && word !== kw) score += 1;
-    }
   }
   return score;
-}
-
-function formatProverbMinimal(p: Proverb, rank: number): string {
-  // ✨ Optimisation psychologique : On greffe l'Origine directement dans le titre H3
-  // pour empêcher Claude de faire l'impasse dessus lors de sa reformulation.
-  const originTag = p.origin ? `[Origine : ${p.origin}]` : '[Origine : Inconnue]';
-
-  if (p.text_fr && p.text_fr.trim().toLowerCase() !== p.text_original.trim().toLowerCase()) {
-    return [
-      `### Proverbe #${rank} ${originTag}`,
-      `- **Traduction :** "${p.text_fr}"`,
-      `- **Sens caché :** *${p.context_fr || 'Dicton populaire.'}*`, // ✨ Transmet l'explication Groq
-      `- **Texte original :** *"${p.text_original}"*`
-    ].join("\n");
-  }
-
-  return [
-    `### Proverbe #${rank} ${originTag}`,
-    `- **Texte :** "${p.text_original}"`
-  ].join("\n");
 }
 
 async function main() {
   db = loadDB();
   const proverbs = db.proverbs;
 
-  // IMPORTANT : On lance le chargement en tâche de fond SANS mettre de "await"
-  // pour que le serveur MCP s'ouvre instantanément sans causer de Timeout côté Claude.
   initSemanticEngine(proverbs).catch((err) => console.error("Erreur init IA:", err));
 
-  const server = new McpServer({ name: "proverbs-of-the-world", version: "1.2.0" });
+  const server = new McpServer({ name: "proverbs-of-the-world", version: "1.5.0" });
 
   server.tool(
     "search_proverbs",
-    // ✨ Consignes d'outil ultra-strictes pour forcer Claude à respecter l'affichage de l'origine géographique
-    "Recherche des proverbes authentiques par pertinence hybride (mots-clés et concept). REQUIS : Tu dois restituer à l'utilisateur le texte en français, le sens caché et OBLIGATOIREMENT l'origine géographique spécifiée pour CHAQUE proverbe trouvé.",
+    "Recherche des adages, expressions, graffitis et proverbes authentiques issus des pages Wikiquote mondiales. " +
+    "CONSIGNE DE RESTITUTION : Affiche chaque élément reçu sans le modifier, en respectant scrupuleusement le format Markdown suivant :\n\n" +
+    "### Proverbe #[Numéro] - [Origine]\n" +
+    "- **Traduction en français :** \"[Traduction fournie]\"\n" +
+    "- **Texte original :** \"[Texte original fourni]\"\n" +
+    "- **Sens philosophique :** *[Sens ou contexte fourni]*",
     {
-      theme: z.string().describe("Thème, concept ou mots-clés. Ex: 'argent', 'persévérance', 'sagesse'"),
-      count: z.number().min(1).max(10).default(5).describe("Nombre de proverbes (défaut : 5)")
+      theme: z.string().describe("Le concept ou thème à chercher (ex: mort, diable, patience)"),
+      count: z.number().min(1).max(10).default(5).describe("Nombre de résultats souhaités")
     },
     async ({ theme, count }) => {
       const keywords = tokenize(theme);
@@ -171,49 +148,38 @@ async function main() {
 
       const scored = proverbs
         .map((p) => {
-          const lexScore = scoreLexical(p, keywords);
-          const semScore = p.embedding && queryEmbedding.length ? cosineSimilarity(p.embedding, queryEmbedding) : 0;
-          const finalScore = lexScore + (semScore * 3.5); 
-          return { proverb: p, score: finalScore };
+          const pools = p.embedding && queryEmbedding.length ? cosineSimilarity(p.embedding, queryEmbedding) : 0;
+          const lex = scoreLexical(p, keywords);
+          return { proverb: p, score: lex + (pools * 3.5) };
         })
-        .filter((x) => x.score > 0.2)
+        .filter((x) => x.score > 0.1)
         .sort((a, b) => b.score - a.score);
 
-      let results: Proverb[];
-      if (scored.length >= count) {
-        results = scored.slice(0, count).map((x) => x.proverb);
-      } else {
-        const found = scored.map((x) => x.proverb);
-        const foundIds = new Set(found.map((p) => p.text_original));
-        const remaining = proverbs
-          .filter((p) => !foundIds.has(p.text_original))
-          .sort(() => Math.random() - 0.5)
-          .slice(0, count - found.length);
-        results = [...found, ...remaining];
-      }
-
-      const seen = new Set<string>();
-      const diverse: Proverb[] = [];
-      const overflow: Proverb[] = [];
-      for (const p of results) {
-        if (!seen.has(p.origin)) {
-          seen.add(p.origin);
-          diverse.push(p);
-        } else {
-          overflow.push(p);
-        }
-      }
-      const final = [...diverse, ...overflow].slice(0, count);
+      const final = scored.slice(0, count).map((x) => x.proverb);
 
       if (final.length === 0) {
-        return { content: [{ type: "text", text: `Aucun proverbe trouvé pour "${theme}".` }] };
+        return { content: [{ type: "text", text: `Aucun résultat trouvé sur Wikiquote pour : "${theme}".` }] };
       }
 
-      const modeStatus = isModelReady ? "Recherche Hybride IA" : "Recherche Lexicale (Indexation IA en cours...)";
-      const header = `🌍 **${final.length} proverbe${final.length > 1 ? "s" : ""} trouvé${final.length > 1 ? "s" : ""} pour "${theme}" (${modeStatus})**\n\n`;
-      const body = final.map((p, i) => formatProverbMinimal(p, i + 1)).join("\n\n---\n\n");
+      // ISOLATION PROTOCOLAIRE NATIVE : On sépare les blocs pour éviter les hallucinations visuelles
+      const contentNodes = final.map((p, index) => {
+        const finalTranslation = p.text_fr || p.text_original;
+        const finalContext = p.context_fr || "Sagesse ou expression répertoriée.";
+        
+        const markdownChunk = [
+          `### Proverbe #${index + 1} - ${p.origin}`,
+          `- **Traduction en français :** "${finalTranslation}"`,
+          `- **Texte original :** "${p.text_original}"`,
+          `- **Sens philosophique :** *${finalContext}*`
+        ].join("\n");
 
-      return { content: [{ type: "text", text: header + body }] };
+        return {
+          type: "text" as const,
+          text: markdownChunk
+        };
+      });
+
+      return { content: contentNodes };
     }
   );
 
@@ -222,6 +188,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("Erreur MCP:", err);
+  console.error("Erreur critique MCP:", err);
   process.exit(1);
 });
