@@ -4,7 +4,7 @@
 
 📦 [NPM Package](https://www.npmjs.com/package/proverbs-of-the-world-mcp) | 💻 [GitHub Repository](https://github.com/dennerywilly-ship-it/proverbs-mcp-final)
 
-> **Injectez de la sagesse culturelle vérifiée dans vos contenus.** Accédez à un catalogue mondial de proverbes authentiques tirés de Wikiquote, propulsé par un moteur de recherche hybride (lexical + sémantique local). Zéro hallucination, structure garantie, cultures diverses.
+> **Injectez de la sagesse culturelle vérifiée dans vos contenus.** Accédez à un catalogue mondial de proverbes authentiques tirés de Wikiquote, propulsé par un moteur de recherche hybride (lexical + sémantique local). Sources encyclopédiques vérifiables, structure garantie, cultures diverses.
 
 Connectez Claude (ou tout LLM supportant MCP) à un immense réservoir de proverbes vérifiés du monde entier - enrichis, structurés et prêts à élever la qualité de vos posts LinkedIn, présentations, écrits créatifs ou analyses philosophiques.
 
@@ -33,11 +33,11 @@ Les LLM sont d'excellents traducteurs et générateurs de texte, mais ils **hall
 - ❌ Proposer des "interprétations" qui lissent la véritable sagesse populaire
 
 **Exemple concret :**
-> Claude : *"Voici un proverbe finnois sur la patience... [génère quelque chose de poétique mais totalement faux]*
+> Claude sans MCP : *"Voici un proverbe finnois sur la patience... [génère quelque chose de poétique mais totalement faux]*
 
 **Avec ce serveur :**
-> Claude : "千里之行，始于足下" (Chine) → *"Le voyage d'un millier de kilomètres commence par un seul pas."*
-> Sagesse authentique, vérifiée, diverse géographiquement.
+> Claude : "Mizu ni nagasu" (Japon) → *"Jeter à l'eau"* - laisser aller, confier au courant naturel ce qu'on ne peut changer.
+> Sagesse authentique, sourcée, diverse géographiquement.
 
 ---
 
@@ -47,9 +47,9 @@ Une **architecture MCP native** qui isole sémantiquement chaque résultat pour 
 
 | Besoin | Solution |
 | :--- | :--- |
-| **Zéro hallucination** | Données exclusivement issues de Wikiquote (CC BY-SA 3.0), typées via validation stricte |
+| **Sources vérifiables** | Données exclusivement issues de Wikiquote (CC BY-SA 3.0), enrichies et re-traduites via LLM |
 | **Recherche intelligente** | Moteur hybride combinant lexical (mots-clés exacts) + sémantique local (Xenova/all-MiniLM-L6-v2 embarqué) |
-| **Aucun coût cloud** | Embeddings calculés en local (~22 Mo), zéro appel API external |
+| **Aucun coût cloud** | Embeddings calculés en local (~22 Mo), zéro appel API externe |
 | **Stabilité prédictible** | Chaque proverbe encapsulé hermétiquement, *isolation native au protocole MCP* |
 | **Diversité culturelle** | Algorithme post-recherche qui garantit une répartition équilibrée des cultures |
 
@@ -57,38 +57,37 @@ Une **architecture MCP native** qui isole sémantiquement chaque résultat pour 
 
 ## 🎨 Démo Visuelle
 
-**Requête :** "Cherche des proverbes sur la persévérance et le commencement"
+**Requête :** "Cherche des proverbes sur l'eau"
 
-**Proverbe #1 - Chine**
-- Traduction: "Le voyage d'un millier de kilomètres commence par un seul pas"
-- Original: "千里之行，始于足下"
-- Sagesse: Sur les commencements et la persévérance
+**Proverbe #1 - Finlande**
+- Traduction: "L'eau est le médecin du monde"
+- Original: "Ves on lian liäkär. (Rautalampi, Savonia)"
+- Sagesse: L'eau est perçue comme un remède naturel fondamental pour tous les maux
 
 **Proverbe #2 - Japon**
-- Traduction: "Chaque grain de poussière accumule une montagne"
-- Original: "塵も積もれば山となる"
-- Sagesse: L'accumulation progressive crée la montagne
+- Traduction: "Jeter à l'eau"
+- Original: "Mizu ni nagasu"
+- Sagesse: Abandonner ou laisser aller quelque chose, en le confiant au cours naturel de l'eau. Symbolise l'acceptation et le détachement face aux difficultés
 
-**Proverbe #3 - Espagne**
-- Traduction: "Pas à pas on va loin"
-- Original: "Paso a paso se va lejos"
-- Sagesse: La progressivité plutôt que l'impatience
+**Proverbe #3 - Hongrie**
+- Traduction: "Porter de l'eau au Danube"
+- Original: "Vizet hord a Dunába"
+- Sagesse: Critique l'inutilité et l'absurdité d'une action superflue - tout effort vain pour améliorer ce qui est déjà parfait ou abondant
 
-*Résultat structuré, multilingue, vérifiable, prêt à copier dans LinkedIn ou un blog.*
+*Résultats réels issus du dataset, copiés depuis le MCP Inspector.*
 
 ---
 
 ## 🎯 Pourquoi Ce MCP et Pas les Alternatives ?
 
-| Solution | Hallucinations | Coût Cloud | Cultures | Contrôle Local |
+| Solution | Sources | Coût Cloud | Cultures | Contrôle Local |
 | :--- | :--- | :--- | :--- | :--- |
-| **Ce serveur** | ✅ Zéro (données vérifiées) | ✅ Zéro | ✅ 40+ | ✅ 100% local |
+| **Ce serveur** | ✅ Wikiquote vérifiable | ✅ Zéro | ✅ 40+ | ✅ 100% local |
 | Autres MCP servers | ⚠️ Génériques | ✅ Gratuit | ❌ Limitées | ✅ Oui |
-| GPT Plugins + "proverbes" | ❌ Massives | ⚠️ Payant | ⚠️ Occidentales | ❌ Non |
-| APIs cloud (Wikiquote brut) | ✅ Aucune | ❌ Cher | ✅ Complètes | ❌ Non |
-| Wikiquote raw JSON | ✅ Aucune | ✅ Zéro | ✅ Complètes | ✅ Oui |
+| GPT Plugins + "proverbes" | ❌ Hallucinations | ⚠️ Payant | ⚠️ Occidentales | ❌ Non |
+| APIs cloud (Wikiquote brut) | ✅ Vérifiable | ❌ Cher | ✅ Complètes | ❌ Non |
 
-**La différence clé :** Zéro hallucination + zéro coût cloud + recherche hybride intelligente + prêt pour la production.
+**La différence clé :** Sources encyclopédiques vérifiables + zéro coût cloud + recherche hybride intelligente + prêt pour la production.
 
 ---
 
@@ -99,14 +98,14 @@ Une **architecture MCP native** qui isole sémantiquement chaque résultat pour 
 | **⏱️ Timeout au démarrage** | Claude ferme la connexion avant que le serveur soit prêt (3-5s de latence) | Démarrage non-bloquant en mode lexical pur (< 100ms), basculement sémantique en arrière-plan |
 | **🧬 Pollution sémantique** | Phrases de remplissage répétées agissent comme "aimants mathématiques", faussant la pertinence vectorielle | Pipeline de filtrage agressif avant génération des embeddings pour un espace vectoriel pur |
 | **📝 Paresse du LLM** | Claude réécrit/fusionnerait les résultats pour économiser les tokens | Prompt engineering structurel dans la description MCP pour forcer une mise en page standardisée |
-| **🌍 Biais géographique** | Moteur pur retourne 5x le même pays (ex: 5 chinois sur "patience") | Algorithme post-recherche qui redistribue les résultats pour diversité culturelle maximale |
+| **🌍 Biais géographique** | Moteur pur retourne 5x le même pays sur certains thèmes | Algorithme post-recherche qui redistribue les résultats pour diversité culturelle maximale |
 
 ### Isolation Sémantique Native
 
 Chaque résultat est encapsulé dans un **nœud hermétique au protocole MCP** - l'attention du LLM traite chaque proverbe indépendamment, sans mélange de contextes.
 
 **Résultat :**
-- ✅ Zéro hallucination visuelle
+- ✅ Pas de fusion de contextes entre proverbes
 - ✅ Caractères régionaux et diacritiques respectés
 - ✅ Scalabilité stable, peu importe la complexité linguistique
 
@@ -163,13 +162,15 @@ Chaque résultat est encapsulé dans un **nœud hermétique au protocole MCP** -
 ### Option 2 : Installation Locale (Développement)
 
 ```bash
-# Cloner et compiler
-git clone <repo-url>
-cd proverbs-of-the-world-mcp
+git clone https://github.com/dennerywilly-ship-it/proverbs-mcp-final
+cd proverbs-mcp-final
 npm install
 npm run build
+```
 
-# Ajouter au fichier de config avec le chemin absolu
+Puis ajoutez au fichier de config avec le chemin absolu :
+
+```json
 {
   "mcpServers": {
     "proverbs-dev": {
@@ -184,17 +185,15 @@ npm run build
 
 ## 💡 Utilisation
 
-Une fois activé, utilise Claude Desktop normalement :
+Une fois activé, utilisez Claude Desktop normalement :
 
 ```
 Utilisateur : "Trouve-moi 5 proverbes sur la mort, d'origines variées."
 
 Claude : [appelle automatiquement search_proverbs]
 
-Résultat : Proverbes authentiques de Mexique, Suisse, Inde, Irlande, etc.
+Résultat : Proverbes sourcés de Mexique, Suisse, Inde, Irlande, etc.
 ```
-
-Le serveur expose un seul outil intelligent :
 
 ### `search_proverbs`
 
@@ -213,7 +212,7 @@ Les LLM hallucinent les proverbes. Les APIs cloud coûtent cher. Les plugins gé
 
 **Vous méritez mieux.**
 
-Ce serveur change ça. 7000+ proverbes vérifiés. 40+ cultures. Zéro coût. Zéro hallucination. Rien que de la sagesse authentique.
+Ce serveur change ça. 7000+ proverbes sourcés. 40+ cultures. Zéro coût. Sources vérifiables. Rien que de la sagesse authentique.
 
 ### 1️⃣ Commencez Maintenant (2 min)
 - Installez via NPM
@@ -229,16 +228,16 @@ Vous l'utilisez pour enrichir du contenu ? [Créez une discussion](https://githu
 
 ```json
 {
-  "text_original": "La sagesse vient à ceux qui l'attendent",
-  "text_fr": "La sagesse vient à ceux qui l'attendent",
-  "context_fr": "Proverbe qui parle de la patience et de la croissance personnelle",
+  "text_original": "Votre proverbe dans sa langue d'origine",
+  "text": "Traduction française",
+  "context_fr": "Explication du sens philosophique ou culturel",
   "origin": "Votre Pays / Culture"
 }
 ```
 
 Validation automatique incluse. Relecture rapide. Pull Request = fait.
 
-**Vous avez une idée d'amélioration :** [Créez une issue](https://github.com/dennerywilly-ship-it/proverbs-mcp-final/issues) ou [une discussion](https://github.com/dennerywilly-ship-it/proverbs-mcp-final/discussions). Recherche sémantique à optimiser ? Nouvelle langue ? C'est votre chance de briller.
+**Vous avez une idée d'amélioration :** [Créez une issue](https://github.com/dennerywilly-ship-it/proverbs-mcp-final/issues) ou [une discussion](https://github.com/dennerywilly-ship-it/proverbs-mcp-final/discussions).
 
 ---
 
@@ -251,8 +250,7 @@ Validation automatique incluse. Relecture rapide. Pull Request = fait.
 - ⭐ [GitHub](https://github.com/dennerywilly-ship-it/proverbs-mcp-final) - Star = vote pour "j'en veux plus"
 - 📦 [NPM Package](https://www.npmjs.com/package/proverbs-of-the-world-mcp) - Installation directe
 - 💬 [Discussions](https://github.com/dennerywilly-ship-it/proverbs-mcp-final/discussions) - Partagez vos découvertes
-- 🐛 Issues ouvertes pour vos suggestions
-- 📌 Suivez les mises à jour en watchant le repo
+- 🐛 [Issues](https://github.com/dennerywilly-ship-it/proverbs-mcp-final/issues) - Suggestions et corrections
 
 ---
 
